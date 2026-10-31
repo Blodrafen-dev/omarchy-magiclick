@@ -201,12 +201,13 @@ Panel {
         Repeater {
           model: root.options
           // Every row here writes to the daemon. With no daemon they would do
-          // nothing, so they are not offered.
-          visible: !root.daemonMissing
-
+          // nothing, so they are not offered. The gate belongs on the delegate,
+          // not on the Repeater: a Repeater's delegates are parented to the
+          // Column, so the Repeater's own visible never reaches them.
           delegate: Column {
             required property var modelData
             width: content.width
+            visible: !root.daemonMissing
             spacing: 0
 
             Button {
