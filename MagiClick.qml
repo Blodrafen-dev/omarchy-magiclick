@@ -121,6 +121,13 @@ Panel {
     command: ["magiclick", "arm-timeout"]
   }
 
+  // The daemon prints the URL and hands it to the browser itself, so the
+  // widget never grows a network path of its own.
+  Process {
+    id: opener
+    command: ["magiclick", "support", "--open"]
+  }
+
   BarIconButton {
     id: button
     anchors.fill: parent
@@ -288,6 +295,33 @@ Panel {
           color: root.dim
           font.family: root.family
           font.pixelSize: Style.font.bodySmall
+        }
+
+        PanelSeparator {
+          width: parent.width
+          foreground: root.ink
+          visible: !root.daemonMissing
+        }
+
+        // Quiet, and last on purpose. It is the only row here that does not
+        // change how the daemon behaves, so it does not belong among the
+        // choices — but it also should not be invisible, which is what a link
+        // in a README amounts to. `magiclick support --open` prints the URL and
+        // hands it to the browser; nothing in the daemon opens a socket, so the
+        // program's threat model is unchanged by having a tip jar.
+        Button {
+          width: content.width
+          leftAlign: true
+          bordered: false
+          visible: !root.daemonMissing
+          iconText: "\uF004"
+          text: "Support MagiClick"
+          foreground: root.ink
+          fontFamily: root.family
+          onClicked: {
+            root.close()
+            opener.running = true
+          }
         }
       }
     }
