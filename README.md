@@ -39,6 +39,7 @@ omarchy bar put blodrafen.magiclick right
 
 | Glyph | State | Meaning |
 |---|---|---|
+| ⚠ | no daemon | the daemon has not written state this session — click the glyph for the install line |
 | ✕ | `off` | nothing is being watched |
 | copy | `on` | auto-copy is on, waiting for a selection |
 | clipboard | `armed` | a selection was just copied; a click would paste |

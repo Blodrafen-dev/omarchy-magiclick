@@ -24,8 +24,17 @@ Panel {
   // handler: `omarchy shell shell summon blodrafen.magiclick` opens the menu.
   manageIpc: false
 
-  readonly property string state: (stateFile.text() || "off").trim()
+  // Empty means the daemon has never written state this session: it writes
+  // "idle" or "off" on startup and on every transition. An absent file is
+  // therefore the one honest signal that nothing is running, and it is worth
+  // distinguishing from "off", which is a running daemon with watching
+  // disabled. Without that, a widget installed before the daemon reads as
+  // "working but switched off", and clicking it does nothing with no
+  // explanation. (It cannot detect a daemon killed mid-session: the last state
+  // it wrote stays on disk.)
+  readonly property string state: (stateFile.text() || "").trim()
   readonly property string window: (timeoutFile.text() || "").trim()
+  readonly property bool daemonMissing: root.state.length === 0
   readonly property bool off: state === "off"
   readonly property bool armed: state === "armed"
   readonly property string armNote: root.window.length > 0 ? " · arm " + root.window : ""
@@ -116,19 +125,25 @@ Panel {
     anchors.fill: parent
     bar: root.bar
     // times / copy / clipboard
-    text: root.off ? "\uF00D" : (root.armed ? "\uF0EA" : "\uF0C5")
+    text: root.daemonMissing ? "\uF071" : (root.off ? "\uF00D" : (root.armed ? "\uF0EA" : "\uF0C5"))
     active: root.armed
-    tooltipText: root.off
-      ? "MagiClick off — click to turn auto-copy on"
-      : (root.armed
-        ? "Armed" + root.armNote + " — click a field to paste"
-        : "Auto-copy on" + root.armNote + " — click for the auto-copy window")
+    tooltipText: root.daemonMissing
+      ? "MagiClick: daemon not running — click for the install line"
+      : (root.off
+        ? "MagiClick off — click to turn auto-copy on"
+        : (root.armed
+          ? "Armed" + root.armNote + " — click a field to paste"
+          : "Auto-copy on" + root.armNote + " — click for the auto-copy window"))
     onPressed: function(b) {
       // Starting is one click. Stopping is a second, deliberate click inside
       // the menu: a stray click on the bar should not silently disarm the thing
       // whose whole job is to tell you it is armed.
       if (b === Qt.LeftButton) {
-        if (root.off) {
+        if (root.daemonMissing) {
+          // Nothing to toggle, and running `magiclick enable` would fail with
+          // no visible result. Open the panel instead, where the fix is.
+          root.toggle()
+        } else if (root.off) {
           root.close()
           toggler.running = true
         } else {
@@ -163,7 +178,7 @@ Panel {
         Text {
           width: parent.width
           textFormat: Text.PlainText
-          text: "Auto-Copy Window"
+          text: root.daemonMissing ? "MagiClick is not running" : "Auto-Copy Window"
           color: root.ink
           font.family: root.family
           font.pixelSize: Style.font.title
@@ -174,7 +189,9 @@ Panel {
           width: parent.width
           textFormat: Text.PlainText
           wrapMode: Text.Wrap
-          text: "How long your copied text is held for paste, then voided. Default min. 30s. (Helps prevent accidental paste.)"
+          text: root.daemonMissing
+            ? "This widget is installed, but the daemon it reads is not running. Install and start it, then this panel has something to configure:\n\n  git clone https://github.com/Blodrafen-dev/magiclick\n  cd magiclick && ./install.sh\n  systemctl --user enable --now magiclick.service"
+            : "How long your copied text is held for paste, then voided. Default min. 30s. (Helps prevent accidental paste.)"
           color: root.dim
           font.family: root.family
           font.pixelSize: Style.font.body
@@ -183,6 +200,9 @@ Panel {
 
         Repeater {
           model: root.options
+          // Every row here writes to the daemon. With no daemon they would do
+          // nothing, so they are not offered.
+          visible: !root.daemonMissing
 
           delegate: Column {
             required property var modelData
@@ -218,12 +238,14 @@ Panel {
         PanelSeparator {
           width: parent.width
           foreground: root.ink
+          visible: !root.daemonMissing
         }
 
         Text {
           width: parent.width
           textFormat: Text.PlainText
           wrapMode: Text.Wrap
+          visible: !root.daemonMissing
           text: "Session only: Your config stays this until changed again or restart."
           color: root.dim
           font.family: root.family
@@ -235,6 +257,7 @@ Panel {
         PanelSeparator {
           width: parent.width
           foreground: root.ink
+          visible: !root.daemonMissing
         }
 
         // The one destructive action in the panel. Borderless rows read as
@@ -244,6 +267,7 @@ Panel {
           width: content.width
           leftAlign: true
           bordered: true
+          visible: !root.daemonMissing
           iconText: "\uF04D"
           text: "Disable"
           foreground: Color.urgent
@@ -257,6 +281,7 @@ Panel {
           rightPadding: Style.spacing.controlPaddingX
           textFormat: Text.PlainText
           wrapMode: Text.Wrap
+          visible: !root.daemonMissing
           text: "Left click glyph turns auto-copy back on."
           color: root.dim
           font.family: root.family
