@@ -186,7 +186,7 @@ Panel {
         Text {
           width: parent.width
           textFormat: Text.PlainText
-          text: root.daemonMissing ? "MagiClick is not running" : "Auto-Copy Window"
+          text: root.daemonMissing ? "MagiClick is not running" : "MagiClick Window"
           color: root.ink
           font.family: root.family
           font.pixelSize: Style.font.title
