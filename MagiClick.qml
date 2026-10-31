@@ -30,8 +30,9 @@ Panel {
   // distinguishing from "off", which is a running daemon with watching
   // disabled. Without that, a widget installed before the daemon reads as
   // "working but switched off", and clicking it does nothing with no
-  // explanation. (It cannot detect a daemon killed mid-session: the last state
-  // it wrote stays on disk.)
+  // explanation. The daemon removes the file when it stops cleanly, so a stop
+  // or a crash-and-restart is reported honestly. (It cannot detect a kill -9:
+  // the last state it wrote stays on disk until the daemon runs again.)
   readonly property string state: (stateFile.text() || "").trim()
   readonly property string window: (timeoutFile.text() || "").trim()
   readonly property bool daemonMissing: root.state.length === 0
