@@ -13,11 +13,11 @@ calls the `magiclick` command.
 without a daemon shows `off` and does nothing when clicked.
 
 ```bash
-git clone https://github.com/Blodrafen-dev/magiclick
-cd magiclick && ./install.sh
-magiclick doctor          # tells you what works on your machine
+yay -S magiclick-bin                    # or: paru -S magiclick-bin
+magiclick doctor                        # tells you what works on your machine
 systemctl --user enable --now magiclick.service
 ```
+Without the AUR: clone the [daemon repository](https://github.com/Blodrafen-dev/magiclick) and run `./install.sh` in it.
 
 Start with `confirm_action = "observe"` in `~/.config/magiclick/config.toml`
 unless you already trust it: it logs the paste it *would* have made and types
@@ -65,7 +65,7 @@ Removing the widget leaves the daemon installed. To remove that too:
 
 ```bash
 systemctl --user disable --now magiclick.service
-rm ~/.local/bin/magiclick ~/.config/systemd/user/magiclick.service
+sudo pacman -Rns magiclick-bin     # from source instead? rm ~/.local/bin/magiclick
 ```
 
 ## Requirements
