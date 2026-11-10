@@ -5,7 +5,9 @@ daemon. Select text, click where it goes, it is already there.
 
 This repository is **only the widget**. It is one plugin, `blodrafen.magiclick`,
 and it does nothing on its own — it reads four files the daemon publishes and
-calls the `magiclick` command.
+calls the `magiclick` command. The design reasoning, including the QML bug that
+made the menu rows clickable with no daemon running, lives in the daemon's
+[`docs/decisions.md`](https://github.com/Blodrafen-dev/magiclick/blob/master/docs/decisions.md).
 
 ## Install
 
